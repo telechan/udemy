@@ -29,7 +29,7 @@ for index, classlabel in enumerate(classes):
             x_test.append(data)
             y_test.append(index)
         else:
-            for angle in range(-25, 25, 5):
+            for angle in range(-30, 30, 5):
                 # 回転
                 img_r = image.rotate(angle)
                 data = np.asarray(img_r)

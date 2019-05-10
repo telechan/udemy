@@ -48,7 +48,7 @@ def model_train(X, y):
     model.compile(loss='categorical_crossentropy',
                     optimizer=opt, metrics=['accuracy'])
 
-    model.fit(X, y, batch_size=32, nb_epoch =100)
+    model.fit(X, y, batch_size=16, nb_epoch =100)
 
     # モデルの保存
     model.save('./animal_cnn_aug.h5')
