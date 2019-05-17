@@ -1,28 +1,18 @@
-import keras
-from keras.models import Sequential
+import keras, sys
+from keras.models import Sequential, load_model
 from keras.layers import Conv2D, MaxPooling2D
 from keras.layers import Activation, Dropout, Flatten, Dense
 from keras.utils import np_utils
 import numpy as np
+from PIL import Image
 
 classes = ["monkey", "boar", "crow"]
 num_classes = len(classes)
 image_size = 50
 
-# メインの関数を定義する
-def main():
-    x_train, x_test, y_train, y_test = np.load("./animal_aug.npy")
-    x_train = x_train.astype("float") / 256
-    x_test = x_test.astype("float") / 256
-    y_train = np_utils.to_categorical(y_train, num_classes)
-    y_test = np_utils.to_categorical(y_test, num_classes)
-
-    model = model_train(x_train, y_train)
-    model_eval(model, x_test, y_test)
-
-def model_train(X, y):
+def build_model():
     model = Sequential()
-    model.add(Conv2D(32, (3, 3), padding='same', input_shape=X.shape[1:]))
+    model.add(Conv2D(32, (3, 3), padding='same', input_shape=(50, 50, 3)))
     model.add(Activation('relu'))
     model.add(Conv2D(32, (3, 3)))
     model.add(Activation('relu'))
@@ -47,17 +37,25 @@ def model_train(X, y):
 
     model.compile(loss='categorical_crossentropy', optimizer=opt, metrics=['accuracy'])
 
-    model.fit(X, y, batch_size=16, nb_epoch =100)
-
-    # モデルの保存
-    model.save('./animal_cnn_aug.h5')
+    # モデルのロード
+    model = load_model('./animal_cnn_aug.h5')
 
     return model
 
-def model_eval(model, X, y):
-    scores = model.evaluate(X, y, verbose=1)
-    print('Test loss: ', scores[0])
-    print('Test Accuracy: ', scores[1])
+def main():
+    image = Image.open(sys.argv[1])
+    image = image.convert('RGB')
+    image = image.resize((image_size, image_size))
+    data = np.asarray(image) / 255
+    x = []
+    x.append(data)
+    x = np.array(x)
+    model = build_model()
+
+    result = model.predict([x])[0]
+    predicted = result.argmax()
+    percentage = int(result[predicted] * 100)
+    print("{0} ({1} %)".format(classes[predicted], percentage))
 
 if __name__ == "__main__":
     main()
